@@ -1,0 +1,20 @@
+{
+  "name": "excel-automation",
+  "version": "1.0.0",
+  "description": "ith timesheets",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "eze lopes",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^0.20.0",
+    "dotenv": "^8.2.0",
+    "exceljs": "^4.1.1",
+    "express": "^4.17.1",
+    "moment": "^2.29.1",
+    "yargs": "^16.0.3"
+  }
+}
