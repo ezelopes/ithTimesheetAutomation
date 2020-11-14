@@ -128,21 +128,7 @@ const populateTimesheet = (templateTimesheet, shifts, day) => {
   return;
 }
 
-const main = async () => {
-  console.log(yargs.argv);
-  const { weeknumber, cookie } = yargs.argv;
-  
-  let ENDPOINT = process.env.ITH_ENDPOINT;
-  if (weeknumber) ENDPOINT += `?week=${weeknumber}`;
-
-  const response = await axios.get(ENDPOINT, {
-    headers: {
-      Cookie: cookie
-    }
-  });
-  const { week, shifts } = response.data;
-  console.log(week, shifts);
-  
+const buildExcelFile = async (week, shifts) => {
   const workbook = new Excel.Workbook();
   
   const timesheetFile = await workbook.xlsx.readFile(process.env.TEMPLATE_PATH);
@@ -162,6 +148,51 @@ const main = async () => {
   WeekendingSundayCell.value = currentSundayDate;
 
   return workbook.xlsx.writeFile(`Lopes, Ezequiel Week ${week} - Timesheet.xlsx`);
+}
+
+const getPHPSESSID = async (username, password) => {
+  const loginResponse = await axios.post(process.env.ITH_LOGIN_ENDPOINT, {
+    headers: {
+      accept: '*/*',
+      'content-type': 'application/x-www-form-urlencoded',
+    },
+    body: `username=${username}&password=${password}`,
+  }); 
+
+  const responseCookies = loginResponse.headers['set-cookie'];
+
+  const PHPSESSID = 'i1dnns2513ra7q385cl12pntt3' || responseCookies[1].slice(10).split(';')[0]; 
+  return PHPSESSID;
+}
+
+const getShiftsAndWeekFromEndpoint = async (PHPSESSID, ITH_SHIFTS_ENDPOINT) => {
+  const responseShifts = await axios.get(ITH_SHIFTS_ENDPOINT, {
+    headers: {
+      accept: '*/*',
+      cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=c283e8c3;`,
+    },
+  });
+
+  const { week, shifts } = responseShifts.data;
+  console.log(week, shifts);
+  
+  return { week, shifts };
+}
+
+const main = async () => {
+
+  const { weeknumber } = yargs.argv; // cookie
+  const ITH_SHIFTS_ENDPOINT = weeknumber ? ITH_SHIFTS_ENDPOINT += `?week=${weeknumber}` : process.env.ITH_SHIFTS_ENDPOINT;
+  
+  
+  const PHPSESSID = await getPHPSESSID(process.env.username, process.env.password);
+  const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, ITH_SHIFTS_ENDPOINT);
+
+  if (!shifts || !week) { 
+   return console.log('ERROR');
+  }
+
+  return buildExcelFile(week, shifts);
 }
 
 main();
