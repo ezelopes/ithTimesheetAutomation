@@ -4,7 +4,12 @@ const Excel = require('exceljs');
 const axios = require('axios');
 const moment = require('moment');
 const yargs = require('yargs');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+const path = require('path');
+const { log } = require('util');
 
+const PORT = parseInt(process.env.PORT) || 8055;
 const app = express();
 
 const firstSunday = '06-09-2020';
@@ -146,23 +151,63 @@ const buildExcelFile = async (week, shifts) => {
   const currentSundayDate = moment(firstSunday, "DD-MM-YYYY").add((week - 1), 'weeks').format('DD-MM-YYYY') ;
 
   WeekendingSundayCell.value = currentSundayDate;
-
-  return workbook.xlsx.writeFile(`Lopes, Ezequiel Week ${week} - Timesheet.xlsx`);
+  const workbookBuffer = await workbook.xlsx.writeBuffer();
+  const workbookBase64 =  workbookBuffer.toString('base64');
+  return workbookBase64;
+  // return workbook.xlsx.writeFile(`Lopes, Ezequiel Week ${week} - Timesheet.xlsx`);
 }
 
 const getPHPSESSID = async (username, password) => {
-  const loginResponse = await axios.post(process.env.ITH_LOGIN_ENDPOINT, {
+  const loginResponse = await axios.get(process.env.ITH_LOGIN_ENDPOINT, {
     headers: {
-      accept: '*/*',
-      'content-type': 'application/x-www-form-urlencoded',
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'accept-language': 'en,it-IT;q=0.9,it;q=0.8,en-US;q=0.7,en-GB;q=0.6',
+      'cache-control': 'no-cache',
+      pragma: 'no-cache',
+      'sec-fetch-dest': 'document',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-site': 'same-origin',
+      'sec-fetch-user': '?1',
+      'upgrade-insecure-requests': '1'  
     },
+    referrer: 'https://ith.port.ac.uk/',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    // body: null,
     body: `username=${username}&password=${password}`,
+    method: 'GET',
+    mode: 'cors'
   }); 
 
+  console.log(loginResponse)
+  console.log(loginResponse.headers)
   const responseCookies = loginResponse.headers['set-cookie'];
 
-  const PHPSESSID = 'i1dnns2513ra7q385cl12pntt3' || responseCookies[1].slice(10).split(';')[0]; 
+  const PHPSESSID = responseCookies[1].slice(10).split(';')[0]; 
   return PHPSESSID;
+}
+
+const loginRequest = (username, password, PHPSESSID) => {
+  return axios.post(process.env.ITH_LOGIN_ENDPOINT, {
+    headers: {
+      accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+      'accept-language': 'en,it-IT;q=0.9,it;q=0.8,en-US;q=0.7,en-GB;q=0.6',
+      'cache-control': 'no-cache',
+      'content-type': 'application/x-www-form-urlencoded',
+      pragma: 'no-cache',
+      'sec-fetch-dest': 'document',
+      'sec-fetch-mode': 'navigate',
+      'sec-fetch-site': 'same-origin',
+      'sec-fetch-user': '?1',
+      'upgrade-insecure-requests': '1',
+      cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=c283e8c3`  
+    },
+    referrer: 'https://ith.port.ac.uk/',
+    referrerPolicy: 'strict-origin-when-cross-origin',
+    body: `username=${username}&password=${password}`,
+    method: 'POST',
+    mode: 'cors'
+
+  });
 }
 
 const getShiftsAndWeekFromEndpoint = async (PHPSESSID, ITH_SHIFTS_ENDPOINT) => {
@@ -174,7 +219,7 @@ const getShiftsAndWeekFromEndpoint = async (PHPSESSID, ITH_SHIFTS_ENDPOINT) => {
   });
 
   const { week, shifts } = responseShifts.data;
-  console.log(week, shifts);
+  // console.log(week, shifts);
   
   return { week, shifts };
 }
@@ -185,14 +230,48 @@ const main = async () => {
   const ITH_SHIFTS_ENDPOINT = weeknumber ? ITH_SHIFTS_ENDPOINT += `?week=${weeknumber}` : process.env.ITH_SHIFTS_ENDPOINT;
   
   
-  const PHPSESSID = await getPHPSESSID(process.env.username, process.env.password);
+  const PHPSESSID = await getPHPSESSID();
+  await loginRequest(PHPSESSID);
   const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, ITH_SHIFTS_ENDPOINT);
 
   if (!shifts || !week) { 
-   return console.log('ERROR');
+    // const { week, shifts } = await getShiftsAndWeekFromEndpoint('8i5pm7n60bkhk6e9dq4q3p4tro', ITH_SHIFTS_ENDPOINT);
+    // console.log(week, shifts)
+    // console.log(PHPSESSID)
+    return console.log('ERROR');
   }
-
+  // return console.log('SUCCESS');
   return buildExcelFile(week, shifts);
 }
 
-main();
+
+app.use(cors());
+app.use(bodyParser.json({ extended: false }));
+
+app.use(express.static(path.join(__dirname, 'views')));
+app.set('view engine', 'html');
+app.engine('html', require('ejs').renderFile);
+
+app.get('/', (req, res) => {
+  res.render('index.html');
+});
+
+app.get('/', (req, res) => {
+  res.render('index.html');
+});
+
+app.post('/api/createTemplate', async (req, res) => {
+  const { cookie, username, password } = req.body;
+
+  // const responseLogin = await loginRequest(username, password, cookie);
+  // console.log(responseLogin.headers);
+  // const PHPSESSID = await getPHPSESSID(username, password);
+
+  const { week, shifts } = await getShiftsAndWeekFromEndpoint(cookie, process.env.ITH_SHIFTS_ENDPOINT);
+  const workbookBase64 = await buildExcelFile(week, shifts);
+
+  // console.log(workbookBase64)
+  res.send({ workbookBase64, week });
+})
+
+app.listen(PORT, () => { console.log(`Listening on port ${PORT}`) })
