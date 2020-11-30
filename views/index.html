@@ -8,25 +8,45 @@
 
     <div class='container'>
       <div class='row'>
-        <label> Username: </label>
-        <input type="text" id='username' />
+        <label> Forename: </label>
+        <input type="text" id='forename' value="" />
       </div>
 
       <div class='row'>
-        <label> Password: </label>
-        <input type="password" id='password'/>
+        <label> Surname: </label>
+        <input type="text" id='surname' value="" />
+      </div>
+      
+      <div class='row'>
+        <label> Payroll Number: </label>
+        <input type="text" id='payrollNumber' value="" />
       </div>
 
       <div class='row'>
         <label> Cookie: </label>
-        <input type="cookie" id='cookie' value="54kqbdiruqga0dsen7qck4pj6m"/>
+        <input type="text" id='cookie' value=""/>
+      </div>
+
+      <div class='row'>
+        <label> Week: </label>
+        <select name="week" id="week">
+        </select>
+      </div>
+
+      <div class='row'>
+        <label> Visa: </label>
+        <select name="visa" id="visa">
+          <option value='NO'> No </option>
+          <option value="YES"> Yes </option>
+        </select>
       </div>
 
       <input class='row' type="button" value="GET EXCEL" onclick="callEndpoint()"/>
-      <a ></a>
+      <a></a>
+
     </div>
 
     <script src="/assets/index.js" charset="utf-8"></script>
-
+      
   </body>
 </html>
