@@ -6,7 +6,7 @@ const path = require('path');
 const cors = require('cors');
 
 const { buildExcelFile } = require('./helpers/timesheetCalculations')
-const { getShiftsAndWeekFromEndpoint } = require('./helpers/ith_api_calls')
+const { getShiftsAndWeekFromEndpoint, loginWithCredentials } = require('./helpers/ith_api_calls')
 
 const PORT = parseInt(process.env.PORT) || 8055;
 const app = express();
@@ -24,17 +24,25 @@ app.get('/', (req, res) => {
 
 app.post('/api/createTemplate', async (req, res) => {
 
-  const { cookie, forename, surname, payrollNumber, selectedWeek, visa } = req.body;
-  
+  const {
+     cookie, forename, surname, payrollNumber, selectedWeek, visa,
+     username, password
+   } = req.body;
+
   let ITH_SHIFTS_ENDPOINT = process.env.ITH_SHIFTS_ENDPOINT;
   if (selectedWeek) ITH_SHIFTS_ENDPOINT += `?week=${selectedWeek}`
+  
+  const PHPSESSID = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
 
-  const { week, shifts } = await getShiftsAndWeekFromEndpoint(cookie, ITH_SHIFTS_ENDPOINT);
+  const token = cookie ? cookie : PHPSESSID;
+  console.table({PHPSESSID, cookie, token });
 
+  const { week, shifts } = await getShiftsAndWeekFromEndpoint(token, ITH_SHIFTS_ENDPOINT);
+  
   if (week) { 
     const workbookBase64 = await buildExcelFile(week, shifts, forename, surname, payrollNumber, visa);
     res.send({ workbookBase64, week });
   } else res.send({ message: 'Invalid Cookie!' })
 })
 
-app.listen(PORT, () => { console.log(`Listening on port ${PORT}`) })
+app.listen(PORT, () => { console.log(`Listening on http://localhost:${PORT}`) })
