@@ -1,10 +1,10 @@
 const axios = require('axios');
 
-const getShiftsAndWeekFromEndpoint = async (PHPSESSID, ITH_SHIFTS_ENDPOINT) => {
+const getShiftsAndWeekFromEndpoint = async (PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT) => {
   const responseShifts = await axios.get(ITH_SHIFTS_ENDPOINT, {
     headers: {
       accept: '*/*',
-      cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=c283e8c3;`,
+      cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=${secondCookie};`,
     },
   });
 
@@ -36,9 +36,12 @@ const loginWithCredentials = async (username, password, ITH_LOGIN_ENDPOINT) => {
   });
 
   const responseCookies = loginResponse.headers['set-cookie'];
+  console.log(responseCookies);
   const PHPSESSID = responseCookies[1].slice(10).split(';')[0]; 
+  const secondCookie = responseCookies[2].slice(18).split(';')[0];
+  console.log(secondCookie)
 
-  return PHPSESSID;
+  return { PHPSESSID, secondCookie };
 }
 
 module.exports = { getShiftsAndWeekFromEndpoint, loginWithCredentials };

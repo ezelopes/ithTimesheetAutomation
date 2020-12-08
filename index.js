@@ -32,12 +32,12 @@ app.post('/api/createTemplate', async (req, res) => {
   let ITH_SHIFTS_ENDPOINT = process.env.ITH_SHIFTS_ENDPOINT;
   if (selectedWeek) ITH_SHIFTS_ENDPOINT += `?week=${selectedWeek}`
   
-  const PHPSESSID = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
+  const { PHPSESSID, secondCookie } = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
 
-  const token = cookie ? cookie : PHPSESSID;
-  console.table({PHPSESSID, cookie, token });
+  // const token = cookie ? cookie : PHPSESSID;
+  // console.table({PHPSESSID, cookie, token });
 
-  const { week, shifts } = await getShiftsAndWeekFromEndpoint(token, ITH_SHIFTS_ENDPOINT);
+  const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT);
   
   if (week) { 
     const workbookBase64 = await buildExcelFile(week, shifts, forename, surname, payrollNumber, visa);
