@@ -6,7 +6,7 @@ const path = require('path');
 const cors = require('cors');
 
 const { buildExcelFile } = require('./helpers/timesheetCalculations')
-const { getShiftsAndWeekFromEndpoint, loginWithCredentials } = require('./helpers/ith_api_calls')
+const { getShiftsAndWeekFromEndpoint, loginWithCredentials, getUserInfo } = require('./helpers/ith_api_calls')
 
 const PORT = parseInt(process.env.PORT) || 8055;
 const app = express();
@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 app.post('/api/createTemplate', async (req, res) => {
 
   const {
-     cookie, forename, surname, payrollNumber, selectedWeek, visa,
+     forename, surname, payrollNumber, selectedWeek, visa,
      username, password
    } = req.body;
 
@@ -33,12 +33,12 @@ app.post('/api/createTemplate', async (req, res) => {
   if (selectedWeek) ITH_SHIFTS_ENDPOINT += `?week=${selectedWeek}`
   
   const { PHPSESSID, secondCookie } = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
-
-  // const token = cookie ? cookie : PHPSESSID;
-  // console.table({PHPSESSID, cookie, token });
+  console.table({PHPSESSID, secondCookie });
 
   const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT);
-  
+
+  const temp = await getUserInfo(PHPSESSID, secondCookie, process.env.ITH_USER_INFO_ENDPOINT);
+
   if (week) { 
     const workbookBase64 = await buildExcelFile(week, shifts, forename, surname, payrollNumber, visa);
     res.send({ workbookBase64, week });

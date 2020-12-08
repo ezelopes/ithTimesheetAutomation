@@ -22,7 +22,6 @@ const callEndpoint = async () => {
     const forename = document.getElementById('forename').value;
     const surname = document.getElementById('surname').value;
     const payrollNumber = document.getElementById('payrollNumber').value;
-    const cookie = document.getElementById('cookie').value;
     
     
     const username = document.getElementById('username').value;
@@ -40,7 +39,7 @@ const callEndpoint = async () => {
     const response = await fetch(apiUrl, {
       method: 'POST',
       body: JSON.stringify({
-        cookie, forename, surname, payrollNumber, selectedWeek, visa,
+        forename, surname, payrollNumber, selectedWeek, visa,
         username, password
       }),
       headers: {
