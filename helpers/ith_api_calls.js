@@ -3,13 +3,10 @@ const axios = require('axios');
 
 const getUserInfo = async (PHPSESSID, secondCookie, ITH_USER_INFO_ENDPOINT) => {
 
-  const dataGetUserLoggedInDetails = qs.stringify({ action: 'getUserLoggedInDetails' })
-  const headers = { 
-    'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-    cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=${secondCookie};`
-  };
+  const dataGetUserID = qs.stringify({ action: 'getUserLoggedInDetails' })
+  const headers = { 'content-type': 'application/x-www-form-urlencoded', cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=${secondCookie};` };
 
-  const responseUserID = await axios.post(ITH_USER_INFO_ENDPOINT, dataGetUserLoggedInDetails, headers);
+  const responseUserID = await axios.post(ITH_USER_INFO_ENDPOINT, dataGetUserID, headers);
   const userID = responseUserID.data.result ? responseUserID.data.result.id : 230;
   console.log(userID)
   
@@ -46,45 +43,3 @@ const loginWithCredentials = async (username, password, ITH_LOGIN_ENDPOINT) => {
 }
 
 module.exports = { getShiftsAndWeekFromEndpoint, loginWithCredentials, getUserInfo };
-
-// ith id
-// fetch("https://ith.port.ac.uk/public/app/global/php/router.php", {
-//   "headers": {
-//     "accept": "*/*",
-//     "accept-language": "en,it-IT;q=0.9,it;q=0.8,en-US;q=0.7,en-GB;q=0.6",
-//     "cache-control": "no-cache",
-//     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-//     "pragma": "no-cache",
-//     "sec-fetch-dest": "empty",
-//     "sec-fetch-mode": "cors",
-//     "sec-fetch-site": "same-origin",
-//     "x-requested-with": "XMLHttpRequest",
-//     "cookie": "PHPSESSID=f13b3ngsuaf6p2j8tu129eg7dr; ZNPCQ003-31303700=02eee342"
-//   },
-//   "referrer": "https://ith.port.ac.uk/app/users/mydetails",
-//   "referrerPolicy": "strict-origin-when-cross-origin",
-//   "body": "action=getUserLoggedInDetails",
-//   "method": "POST",
-//   "mode": "cors"
-// });
-
-// user info
-// fetch("https://ith.port.ac.uk/public/app/global/php/router.php", {
-//   "headers": {
-//     "accept": "*/*",
-//     "accept-language": "en,it-IT;q=0.9,it;q=0.8,en-US;q=0.7,en-GB;q=0.6",
-//     "cache-control": "no-cache",
-//     "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
-//     "pragma": "no-cache",
-//     "sec-fetch-dest": "empty",
-//     "sec-fetch-mode": "cors",
-//     "sec-fetch-site": "same-origin",
-//     "x-requested-with": "XMLHttpRequest",
-//     "cookie": "PHPSESSID=f13b3ngsuaf6p2j8tu129eg7dr; ZNPCQ003-31303700=02eee342"
-//   },
-//   "referrer": "https://ith.port.ac.uk/app/users/mydetails",
-//   "referrerPolicy": "strict-origin-when-cross-origin",
-//   "body": "action=getUserData&user_id=230",
-//   "method": "POST",
-//   "mode": "cors"
-// });

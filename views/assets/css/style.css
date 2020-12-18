@@ -3,12 +3,14 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  margin-top: 2em;
+  margin-bottom: 2em;
 }
 .row {
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  width: 10%;
+  width: 30%;
   flex-grow: 1;
   margin-top: 2em;
 }
