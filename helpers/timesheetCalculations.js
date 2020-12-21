@@ -140,7 +140,8 @@ const buildExcelFile = async (week, shifts, forename, surname, payrollNumber, vi
   const SurnameCell = templateTimesheet.getCell('B3');
   SurnameCell.value = surname;
 
-  if (visa) {
+  console.log(visa.length);
+  if (visa.length > 0) {
     const VisaCell = templateTimesheet.getCell('I22');
     VisaCell.value = 'YES';
   }

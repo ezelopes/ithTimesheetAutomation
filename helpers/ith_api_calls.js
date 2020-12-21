@@ -3,18 +3,37 @@ const axios = require('axios');
 
 const getUserInfo = async (PHPSESSID, secondCookie, ITH_USER_INFO_ENDPOINT) => {
 
-  const dataGetUserID = qs.stringify({ action: 'getUserLoggedInDetails' })
-  const headers = { 'content-type': 'application/x-www-form-urlencoded', cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=${secondCookie};` };
-
-  const responseUserID = await axios.post(ITH_USER_INFO_ENDPOINT, dataGetUserID, headers);
-  const userID = responseUserID.data.result ? responseUserID.data.result.id : 230;
-  console.log(userID)
+  try {
+    const headers = { 'content-type': 'application/x-www-form-urlencoded', cookie: `PHPSESSID=${PHPSESSID}; ZNPCQ003-31303700=${secondCookie};` }
+    const dataGetUserID = qs.stringify({ action: 'getUserLoggedInDetails'});
   
-  const dataGetUserData = qs.stringify({ action: 'getUserData', user_id: userID });
-  const responseUserData = await axios.post(ITH_USER_INFO_ENDPOINT, dataGetUserData, headers);
-  console.log(responseUserData.data.result)
+    const options = {
+      method: 'POST',
+      headers: headers,
+      data: dataGetUserID,
+      url: ITH_USER_INFO_ENDPOINT,
+    };
 
-  return responseUserData;
+    const responseUserID = await axios(options);
+    const userID = responseUserID.data.result.id;
+    console.log(userID);
+    
+    const dataGetUserData = qs.stringify({ action: 'getUserData', user_id: userID });
+    options.data = dataGetUserData;
+    const responseUserData = await axios(options);
+  
+    const userInfo = responseUserData.data.result.user.data[0];
+    const visa = responseUserData.data.result.visa.data; // double check with someone
+    const { first_name, middle_name, last_name, payroll } = userInfo;
+    console.log({ first_name, middle_name, last_name, payroll });
+    console.log(visa);
+  
+    const forename = first_name + ' ' + middle_name;
+  
+    return { forename, last_name, payroll, visa };
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 const getShiftsAndWeekFromEndpoint = async (PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT) => {

@@ -24,25 +24,25 @@ app.get('/', (req, res) => {
 
 app.post('/api/createTemplate', async (req, res) => {
 
-  const {
-     forename, surname, payrollNumber, selectedWeek, visa,
-     username, password
-   } = req.body;
+  try {
+    const { username, password, selectedWeek } = req.body;
+ 
+    const  ITH_SHIFTS_ENDPOINT = process.env.ITH_SHIFTS_ENDPOINT + `?week=${selectedWeek}`;
+    // if (selectedWeek) ITH_SHIFTS_ENDPOINT += `?week=${selectedWeek}`
+   
+    const { PHPSESSID, secondCookie } = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
+    console.table({PHPSESSID, secondCookie });
 
-  let ITH_SHIFTS_ENDPOINT = process.env.ITH_SHIFTS_ENDPOINT;
-  if (selectedWeek) ITH_SHIFTS_ENDPOINT += `?week=${selectedWeek}`
-  
-  const { PHPSESSID, secondCookie } = await loginWithCredentials(username, password, process.env.ITH_LOGIN_ENDPOINT);
-  console.table({PHPSESSID, secondCookie });
+    const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT);
+    const { forename, last_name, payroll, visa } = await getUserInfo(PHPSESSID, secondCookie, process.env.ITH_USER_INFO_ENDPOINT);
 
-  const { week, shifts } = await getShiftsAndWeekFromEndpoint(PHPSESSID, secondCookie, ITH_SHIFTS_ENDPOINT);
+    const workbookBase64 = await buildExcelFile(week, shifts, forename, last_name, payroll, visa);
+    res.status(200).send({ workbookBase64, week, forename, last_name });
 
-  const temp = await getUserInfo(PHPSESSID, secondCookie, process.env.ITH_USER_INFO_ENDPOINT);
-
-  if (week) { 
-    const workbookBase64 = await buildExcelFile(week, shifts, forename, surname, payrollNumber, visa);
-    res.send({ workbookBase64, week });
-  } else res.send({ message: 'Invalid Cookie!' })
+  } catch (err) {
+    console.log(err);
+    res.status(500).send({ message: 'Wrong Credentials. Try again!' });
+  }
 })
 
 app.listen(PORT, () => { console.log(`Listening on http://localhost:${PORT}`) })

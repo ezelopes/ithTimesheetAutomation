@@ -2,8 +2,9 @@
 <html lang='en'>
   <head>
     <title>ITH TIMESHEET</title>
-    <!-- CSS only -->
+
     <link href='https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css' rel='stylesheet' integrity='sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1' crossorigin='anonymous'>
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.0/css/all.css" integrity="sha384-lZN37f5QGtY3VHgisS14W3ExzMWZxybE1SJSEsQp9S+oqd12jhcu+A56Ebc1zFSJ" crossorigin="anonymous">
     <link rel='stylesheet' href='./assets/css/style.css'>
 
     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -22,7 +23,6 @@
             aria-label='Username'
             aria-describedby='basic-addon1'
             id='username'
-            value='lopese'
           >
         </div>
       </div>
@@ -42,42 +42,33 @@
       </div>
 
       <div class='row'>
-        <select class="form-select" aria-label="week select" name='week' id='week'>
-        </select>
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon1">📆</span>
+          <select class="form-select" aria-label="week select" name='week' id='week'>
+          </select>
+        </div>
       </div>
 
       <div class='row'>
-        <label> Forename: </label>
-        <input type='text' id='forename' value='Ezequiel Damian' />
-      </div>
-
-      <div class='row'>
-        <label> Surname: </label>
-        <input type='text' id='surname' value='Lopes' />
-      </div>
-      
-      <div class='row'>
-        <label> Payroll Number: </label>
-        <input type='text' id='payrollNumber' value='1012850' />
-      </div>
-
-      <div class='row'>
-        <label> Visa: </label>
-        <select name='visa' id='visa'>
-          <option value='NO'> No </option>
-          <option value='YES'> Yes </option>
-        </select>
-      </div>
-
-      
-      <div class='row'>
-        <input class="btn btn-primary" type='button' value='GET EXCEL' onclick='callEndpoint()'/>
+        <button 
+          id='getExcelBtn'
+          class="btn btn-success"
+          type='button'
+          onclick='callEndpoint()'
+        >
+        <i id='spinningItem' class="fas fa-circle-notch fa-spin visually-hidden"></i>
+        <span id='buttonTxt'>
+          GET EXCEL
+        </span>
+        
+        </button>
         <a></a>
       </div>
 
     </div>
 
     <script src='/assets/index.js' charset='utf-8'></script>
-      
+    <!-- <script type="text/javascript" src="http://livejs.com/live.js"></script> -->
+
   </body>
 </html>

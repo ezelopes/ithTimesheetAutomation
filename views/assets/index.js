@@ -1,3 +1,14 @@
+const inputPswElement = document.getElementById('username');
+inputPswElement.addEventListener('keydown', ({key}) => {
+  if (key === 'Enter') return callEndpoint();
+})
+
+const inputNameElement = document.getElementById('password');
+inputNameElement.addEventListener('keydown', ({key}) => {
+  if (key === 'Enter') return callEndpoint();
+})
+
+
 window.onload = function populateDropdown() {
   const firstSunday = new Date('09-06-2020');
   const today = new Date();
@@ -16,52 +27,59 @@ window.onload = function populateDropdown() {
   weekDropdown.value = currentWeek + 2;
 };
 
+const getExcelBtn = document.getElementById('getExcelBtn');
+const spinningItem = document.getElementById('spinningItem');
+const buttonTxt = document.getElementById('buttonTxt');
+
 const callEndpoint = async () => {
   try {
+    getExcelBtn.disabled = true;
+    spinningItem.classList.remove('visually-hidden');
+    buttonTxt.innerHTML = 'Loading...';
+
     const apiUrl = '/api/createTemplate';
-    const forename = document.getElementById('forename').value;
-    const surname = document.getElementById('surname').value;
-    const payrollNumber = document.getElementById('payrollNumber').value;
-    
     
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
-
 
     const weekDropdown = document.getElementById('week');
     const selectedWeek = weekDropdown.options[weekDropdown.selectedIndex].value;
     console.log(selectedWeek)
 
-    const visaDropdown = document.getElementById('visa');
-    const visa = visaDropdown.options[visaDropdown.selectedIndex].value === 'YES' ? true : false;
-    console.log(visa)
+    // if username missing, red border
+    // if psw missing, red border
 
     const response = await fetch(apiUrl, {
       method: 'POST',
       body: JSON.stringify({
-        forename, surname, payrollNumber, selectedWeek, visa,
-        username, password
+        username, password, selectedWeek
       }),
       headers: {
         'content-type': 'application/json',
       }
     });
     const body = await response.json();
-    const { workbookBase64, week } = body;
+    const { workbookBase64, week, forename, last_name } = body;
 
-    if (!workbookBase64) return alert(body.message)
+    if (!workbookBase64) throw new Error(body.message);
 
     const uri = `data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,${workbookBase64}`;
 
     const downloadLink = document.createElement('a');
     downloadLink.href = uri;
-    downloadLink.download = `${surname}, ${forename} Week ${week} - Timesheet.xlsx`;
+    downloadLink.download = `${last_name}, ${forename} Week ${week} - Timesheet.xlsx`;
     
     document.body.appendChild(downloadLink);
     downloadLink.click();
     document.body.removeChild(downloadLink);
+    
+
   } catch (err) {
-    console.log(err);
+    alert(err.message);    
+  } finally {
+    document.getElementById('getExcelBtn').disabled = false;
+    buttonTxt.innerHTML = 'GET EXCEL';
+    spinningItem.classList.add('visually-hidden');
   }
   
 }
