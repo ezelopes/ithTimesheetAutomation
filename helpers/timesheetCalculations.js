@@ -28,6 +28,7 @@ const combineShifts = (shifts) => {
 
   const combinedShifts = [];
   for(let i = 0; i < shifts.length; i++) {
+    if (shifts[i].building === 'ul2') shifts[i].building = 'ul1'
 
     if (i !== (shifts.length - 1) && shifts[i].building === shifts[i+1].building && shifts[i].end_time === shifts[i+1].start_time) {
       combinedShifts.push({
@@ -85,7 +86,7 @@ const populateTimesheet = (templateTimesheet, shifts, day) => {
   const TimeEndCell_1 = templateTimesheet.getCell(`E${dayRow[day]}`);
   const TimeStartCell_2 = templateTimesheet.getCell(`F${dayRow[day]}`);
   const TimeEndCell_2 = templateTimesheet.getCell(`G${dayRow[day]}`);
-  const TotalHoursCell_2 = templateTimesheet.getCell(`H${dayRow[day]}`);
+  const TotalHoursCell = templateTimesheet.getCell(`I${dayRow[day]}`);
 
   const combinedShifts = combineShifts(currentDayShifts); // if two separate shifts in a row in the same building, combine them
   const totHoursWorked = calculateTotHoursWorkedPerDay(combinedShifts); // if 23:59 ->  00:00
@@ -107,7 +108,7 @@ const populateTimesheet = (templateTimesheet, shifts, day) => {
   }
 
   LocationCell.value = locationString;
-  TotalHoursCell_2.value = totHoursWorked;
+  // TotalHoursCell.value = totHoursWorked;
   
   return;
 }
@@ -126,12 +127,12 @@ const buildExcelFile = async (week, shifts, forename, surname, payrollNumber, vi
   populateTimesheet(templateTimesheet, shifts, 'Saturday');
   populateTimesheet(templateTimesheet, shifts, 'Sunday');
 
-  const WeekendingSundayCell = templateTimesheet.getCell('J5');
+  const WeekendingSundayCell = templateTimesheet.getCell('K5');
   const firstSunday = '06-09-2020';
   const currentSundayDate = moment(firstSunday, "DD-MM-YYYY").add((week - 1), 'weeks').format('DD-MM-YYYY') ;
   WeekendingSundayCell.value = currentSundayDate;
 
-  const PayrollCell = templateTimesheet.getCell('J3');
+  const PayrollCell = templateTimesheet.getCell('K3');
   PayrollCell.value = payrollNumber;
   
   const ForenameCell = templateTimesheet.getCell('F3');
